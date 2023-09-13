@@ -176,7 +176,7 @@ def generate_legend():
 
 
 if __name__ == '__main__':
-    with open('einstein.txt', 'w') as f:
+    with open('einstein_input.cnf', 'w') as f:
         formula = generate_einstein_formula()
         f.write(formula)
     with open('legend.txt', 'w') as f:
