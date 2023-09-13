@@ -1,6 +1,7 @@
 import copy
 import random
 import os
+import time
 import numpy as np
 
 vars = set()
@@ -27,14 +28,15 @@ def parse_einstein():
         cnf.pop()
         return cnf, num_of_var
 
-def dpll(cnf, assignments):
+def dpll(i, cnf, assignments):
+    i += 1
     #unit-preference -> make assignments
     unit_preference(cnf, assignments)
 
     if cnf == None or len(cnf) == 0:
-        return True, assignments
+        return True, assignments, i
     if len(min(cnf, key=len)) == 0:
-        return False, assignments
+        return False, assignments, i
 
     #splitting rule
     left_to_assign = list(vars - set(np.absolute(assignments)))
@@ -45,15 +47,15 @@ def dpll(cnf, assignments):
     temp_cnf = copy.deepcopy(cnf)
     temp_cnf.append([prop])
 
-    boolean, temp_assignments = dpll(temp_cnf, temp_assignments)
+    boolean, temp_assignments, i = dpll(i, temp_cnf, temp_assignments)
     if boolean:
-        return True, temp_assignments
+        return True, temp_assignments, i
     
     temp_assignments = copy.deepcopy(assignments)
     temp_cnf = copy.deepcopy(cnf)
     temp_cnf.append([-prop])
     
-    return dpll(temp_cnf, temp_assignments)
+    return dpll(i, temp_cnf, temp_assignments)
     
 
 def unit_preference(cnf, assignments):
@@ -79,14 +81,15 @@ def unit_preference(cnf, assignments):
             if (-assignment) in clause:
                 clause.remove(-assignment)
 
-def generate_solution(boolean, final_assignments, clauses, num_of_var):
+def generate_solution(boolean, final_assignments, clauses, num_of_var, elapsed_time, i):
     assignments = [("v " + str(x)) for x in final_assignments]
 
     solution = os.linesep.join(assignments)
 
-    solution_variable = os.linesep.join(["s cnf" + " 1 " if boolean else " 0 " + str(num_of_var) + " " + str(clauses), solution])
-    solution_final = os.linesep.join(["c Einstein's puzzle's solution", solution_variable])
-
+    solution_variable = os.linesep.join(["s cnf" + (" 1 " if boolean else " 0 ") + str(num_of_var) + " " + str(clauses), solution])
+    solution_comment = os.linesep.join(["c Einstein's puzzle's solution", solution_variable])
+    solution_final = os.linesep.join(["t cnf" + (" 1 " if boolean else " 0 ") + str(num_of_var) + " " + str(clauses) + " " + str(elapsed_time) + " " + str(i), solution_comment])
+    
     return solution_final
 
 
@@ -95,11 +98,15 @@ if __name__ == '__main__':
     clauses = len(cnf)
     vars = set(range(1, num_of_var + 1))
     assignments = list()
-    boolean, final_assignments = dpll(cnf, assignments)
+    i = 0
+    start_time = time.time()
+    boolean, final_assignments, i = dpll(i, cnf, assignments)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
 
     final_assignments.sort()
 
     with open('einstein_output.cnf', 'w') as f:
-        solution = generate_solution(boolean, final_assignments, clauses, num_of_var)
+        solution = generate_solution(boolean, final_assignments, clauses, num_of_var, elapsed_time, i)
         f.write(solution)
 
