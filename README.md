@@ -1,0 +1,1 @@
+In order to generate the input file, run einstein.py. In order to run dpll and generate the output file, run dpll.py.
