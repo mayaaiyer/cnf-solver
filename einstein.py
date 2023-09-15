@@ -118,42 +118,41 @@ def generate_einstein_formula():
     formula = []
     formula.extend([generate_formulae(*p) for p in parameters])
 
-    # The Norwegian lives in the first house.
-    formula.append('{} {}'.format(nation(1, norwegian), ending_char))
-    # The Norwegian lives next to the blue house.
-    formula.append('{} {}'.format(color(2, blue), ending_char))
-    # The man living in the center house drinks milk.
-    formula.append('{} {}'.format(drink(3, milk), ending_char))
-    # The Brit lives in the red house.
+    # • The Brit lives in the red house.
     formula.append(pair_relationship(nation, british, color, red))
-    # The green house’s owner drinks coffee.
-    formula.append(pair_relationship(color, green, drink, coffee))
-    # The Dane drinks tea.
-    formula.append(pair_relationship(nation, danish, drink, tea))
-    # The owner of the yellow house smokes Dunhill.
-    formula.append(pair_relationship(color, yellow, cigar, dunhill))
-    # The Swede keeps dogs as pets.
+    # • The Swede keeps dogs as pets.
     formula.append(pair_relationship(nation, swedish, pet, dog))
-    # The German smokes Prince.
-    formula.append(pair_relationship(nation, german, cigar, prince))
-    # The person who smokes Pall Mall rears birds.
-    formula.append(pair_relationship(cigar, pallmall, pet, bird))
-    # The owner who smokes Bluemasters drinks beer.
-    formula.append(pair_relationship(cigar, bluemasters, drink, beer))
-    # The man who keeps the horse lives next to the man who smokes Dunhill.
-    formula.append(neighbor(pet, horse, cigar, dunhill))
-    # The man who smokes Blends lives next to the one who keeps cats.
-    formula.append(neighbor(cigar, blends, pet, cat))
-    # The man who smokes Blends has a neighbor who drinks water.
-    formula.append(neighbor(cigar, blends, drink, water))
-    # The green house is on the left of the white house.
+    # • The Dane drinks tea.
+    formula.append(pair_relationship(nation, danish, drink, tea))
+    # • The green house is on the left of the white house.
     for w in range(1, size+1):
         for g in range(size, 0, -1):
             if w-1 <= g <= w:
                 continue
-            formula.append('-{} -{} {}'.format(
-                color(w, white), color(g, green), ending_char
-            ))
+            formula.append('-{} -{} {}'.format(color(w, white), color(g, green), ending_char))
+    # • The green house’s owner drinks coffee.
+    formula.append(pair_relationship(color, green, drink, coffee))
+    # • The person who smokes Pall Mall rears birds.
+    formula.append(pair_relationship(cigar, pallmall, pet, bird))
+    # • The owner of the yellow house smokes Dunhill.
+    formula.append(pair_relationship(color, yellow, cigar, dunhill))
+    # • The man living in the center house drinks milk.
+    formula.append('{} {}'.format(drink(3, milk), ending_char))
+    # • The Norwegian lives in the first house.
+    formula.append('{} {}'.format(nation(1, norwegian), ending_char))
+    # • The man who smokes Blends lives next to the one who keeps cats.
+    formula.append(neighbor(cigar, blends, pet, cat))
+    # • The man who keeps the horse lives next to the man who smokes Dunhill.
+    formula.append(neighbor(pet, horse, cigar, dunhill))
+    # • The owner who smokes Bluemasters drinks beer.
+    formula.append(pair_relationship(cigar, bluemasters, drink, beer))
+    # • The German smokes Prince.
+    formula.append(pair_relationship(nation, german, cigar, prince))
+    # • The Norwegian lives next to the blue house.
+    formula.append('{} {}'.format(color(2, blue), ending_char))
+    # • The man who smokes Blends has a neighbor who drinks water
+    formula.append(neighbor(cigar, blends, drink, water))
+
     formula_strings = os.linesep.join(formula)
     formula_cnf = os.linesep.join([count_cnf(formula_strings), formula_strings])
     formula_final = os.linesep.join(["c Einstein's puzzle, encoded in CNF", formula_cnf])

@@ -28,9 +28,9 @@ def parse_einstein():
         cnf.pop()
         return cnf, num_of_var
 
-def dpll(i, cnf, assignments):
+def dpll_random(i, cnf, assignments):
     i += 1
-    #unit-preference -> make assignments
+    # unit-preference -> make assignments
     unit_preference(cnf, assignments)
 
     if cnf == None or len(cnf) == 0:
@@ -38,16 +38,15 @@ def dpll(i, cnf, assignments):
     if len(min(cnf, key=len)) == 0:
         return False, assignments, i
 
-    #splitting rule
+    # splitting rule
     left_to_assign = list(vars - set(np.absolute(assignments)))
- 
     prop = random.choice(left_to_assign)
 
     temp_assignments = copy.deepcopy(assignments)
     temp_cnf = copy.deepcopy(cnf)
     temp_cnf.append([prop])
 
-    boolean, temp_assignments, i = dpll(i, temp_cnf, temp_assignments)
+    boolean, temp_assignments, i = dpll_random(i, temp_cnf, temp_assignments)
     if boolean:
         return True, temp_assignments, i
     
@@ -55,31 +54,29 @@ def dpll(i, cnf, assignments):
     temp_cnf = copy.deepcopy(cnf)
     temp_cnf.append([-prop])
     
-    return dpll(i, temp_cnf, temp_assignments)
+    return dpll_random(i, temp_cnf, temp_assignments)
     
 
 def unit_preference(cnf, assignments):
     while len(min(cnf, key=len)) == 1:
         #there is a clause of length 1
         unit_clause = min(cnf, key=len)
-        assignments.append(unit_clause[0])
-        while(unit_clause in cnf): #remove all instances of the unit clause
-            cnf.remove(unit_clause)
-        for clause in cnf: #remove all instances of the assignment proposition
-            if unit_clause[0] in clause:
-                cnf.remove(clause)
-            if (-unit_clause[0]) in clause:
-                clause.remove(-unit_clause[0])
+        if -unit_clause[0] in assignments: # add termination condition if the assignment is invalid
+            cnf.append([])
+        elif not unit_clause[0] in assignments: # assign if not already assigned
+            assignments.append(unit_clause[0])
+        cnf.remove(unit_clause)
         if len(cnf) == 0:
             return
 
-    #simplify on assignments
+    # simplify on assignments
+
     for assignment in assignments:
-        for clause in cnf: #remove all instances of the assignment proposition
+        for clause in cnf[:]: # remove all instances of the assignment proposition
             if assignment in clause:
                 cnf.remove(clause)
-            if (-assignment) in clause:
-                clause.remove(-assignment)
+            if (-1 * assignment) in clause:
+                clause.remove(-1 * assignment)
 
 def generate_solution(boolean, final_assignments, clauses, num_of_var, elapsed_time, i):
     assignments = [("v " + str(x)) for x in final_assignments]
@@ -94,13 +91,14 @@ def generate_solution(boolean, final_assignments, clauses, num_of_var, elapsed_t
 
 
 if __name__ == '__main__':
+    random.seed(7102003)
     cnf, num_of_var = parse_einstein()
     clauses = len(cnf)
     vars = set(range(1, num_of_var + 1))
     assignments = list()
     i = 0
     start_time = time.time()
-    boolean, final_assignments, i = dpll(i, cnf, assignments)
+    boolean, final_assignments, i = dpll_random(i, cnf, assignments)
     end_time = time.time()
     elapsed_time = end_time - start_time
 
