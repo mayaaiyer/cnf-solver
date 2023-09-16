@@ -2,6 +2,7 @@ import copy
 import random
 import os
 import time
+import argparse
 import numpy as np
 
 vars = set()
@@ -92,13 +93,26 @@ def generate_solution(boolean, final_assignments, clauses, num_of_var, elapsed_t
 
 if __name__ == '__main__':
     random.seed(7102003)
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-hr", "--heuristic", help="the heuristic to run (random, two-clause, maya's)")
+
+    args = argParser.parse_args()
     cnf, num_of_var = parse_einstein()
     clauses = len(cnf)
     vars = set(range(1, num_of_var + 1))
     assignments = list()
     i = 0
+    
+    boolean, final_assignments = None, None
+
     start_time = time.time()
-    boolean, final_assignments, i = dpll_random(i, cnf, assignments)
+    if args.heuristic == "two-clause": # run two-clause heuristic
+        boolean, final_assignments, i = dpll_random(i, cnf, assignments)
+    elif args.heuristic == "maya's": # run maya's heuristic
+        boolean, final_assignments, i = dpll_random(i, cnf, assignments)
+    else: # run random
+        boolean, final_assignments, i = dpll_random(i, cnf, assignments)
+
     end_time = time.time()
     elapsed_time = end_time - start_time
 
