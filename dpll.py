@@ -29,6 +29,35 @@ def parse_einstein():
         cnf.pop()
         return cnf, num_of_var
 
+def random_heuristic(assignments):
+    left_to_assign = list(vars - set(np.absolute(assignments)))
+    prop = random.choice(left_to_assign)
+    return prop
+
+def two_clause_heuristic(cnf, assignments):
+    freq = {}
+    for clause in cnf:
+        if len(clause) == 2:
+            if (clause[0] in freq):
+                freq[clause[0]] += 1
+            else:
+                freq[clause[0]] = 1
+            
+            if (clause[1] in freq):
+                freq[clause[1]] += 1
+            else:
+                freq[clause[1]] = 1
+
+    prop = None
+
+    if len(freq) == 0:
+        left_to_assign = list(vars - set(np.absolute(assignments)))
+        prop = random.choice(left_to_assign)
+    else:
+        prop = list(freq.keys())[list(freq.values()).index(max(freq.values()))]
+    
+    return prop
+
 def dpll_random(i, cnf, assignments):
     i += 1
     # unit-preference -> make assignments
@@ -40,8 +69,7 @@ def dpll_random(i, cnf, assignments):
         return False, assignments, i
 
     # splitting rule
-    left_to_assign = list(vars - set(np.absolute(assignments)))
-    prop = random.choice(left_to_assign)
+    prop = random_heuristic(assignments)
 
     temp_assignments = copy.deepcopy(assignments)
     temp_cnf = copy.deepcopy(cnf)
@@ -57,6 +85,32 @@ def dpll_random(i, cnf, assignments):
     
     return dpll_random(i, temp_cnf, temp_assignments)
     
+def dpll_two_clause(i, cnf, assignments):
+    i += 1
+    # unit-preference -> make assignments
+    unit_preference(cnf, assignments)
+
+    if cnf == None or len(cnf) == 0:
+        return True, assignments, i
+    if len(min(cnf, key=len)) == 0:
+        return False, assignments, i
+
+    # splitting rule
+    prop = two_clause_heuristic(cnf, assignments)
+
+    temp_assignments = copy.deepcopy(assignments)
+    temp_cnf = copy.deepcopy(cnf)
+    temp_cnf.append([prop])
+
+    boolean, temp_assignments, i = dpll_random(i, temp_cnf, temp_assignments)
+    if boolean:
+        return True, temp_assignments, i
+    
+    temp_assignments = copy.deepcopy(assignments)
+    temp_cnf = copy.deepcopy(cnf)
+    temp_cnf.append([-prop])
+    
+    return dpll_random(i, temp_cnf, temp_assignments)
 
 def unit_preference(cnf, assignments):
     while len(min(cnf, key=len)) == 1:
@@ -107,7 +161,7 @@ if __name__ == '__main__':
 
     start_time = time.time()
     if args.heuristic == "two-clause": # run two-clause heuristic
-        boolean, final_assignments, i = dpll_random(i, cnf, assignments)
+        boolean, final_assignments, i = dpll_two_clause(i, cnf, assignments)
     elif args.heuristic == "maya's": # run maya's heuristic
         boolean, final_assignments, i = dpll_random(i, cnf, assignments)
     else: # run random
